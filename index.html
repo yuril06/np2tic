@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TIC NP2 — Modo Estudo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --surface: #0f0f1a;
+  --card: #14141f;
+  --card2: #1a1a28;
+  --border: #252535;
+  --c0: #00e5ff;
+  --c1: #ff3cac;
+  --c2: #9d4eff;
+  --c3: #00ff94;
+  --text: #e2e2f0;
+  --muted: #5a5a7a;
+  --xp: #ffd700;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+header{position:sticky;top:0;z-index:100;background:rgba(8,8,16,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{font-family:'Space Mono',monospace;font-size:12px;color:var(--c0);letter-spacing:2px;white-space:nowrap}
+.hdr-right{display:flex;align-items:center;gap:12px}
+.xp-wrap{display:flex;align-items:center;gap:8px}
+.xp-lbl{font-family:'Space Mono',monospace;font-size:11px;color:var(--xp);white-space:nowrap}
+.xp-track{width:130px;height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--xp),#ff9900);width:0%;transition:width .5s cubic-bezier(.22,1,.36,1)}
+.score-badge{font-family:'Space Mono',monospace;font-size:11px;background:var(--card);border:1px solid var(--border);padding:4px 12px;border-radius:20px;color:var(--xp);white-space:nowrap}
+
+.hero{position:relative;z-index:1;text-align:center;padding:56px 24px 36px}
+.hero-tag{display:inline-block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--c1);border:1px solid rgba(255,60,172,.4);padding:4px 14px;border-radius:20px;margin-bottom:18px}
+.hero h1{font-size:clamp(2rem,6vw,3.8rem);font-weight:800;line-height:1.1;background:linear-gradient(135deg,var(--c0) 0%,var(--c2) 55%,var(--c1) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{margin-top:10px;color:var(--muted);font-size:14px;font-family:'Space Mono',monospace}
+
+.overview{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:820px;margin:0 auto 28px;padding:0 20px}
+.ov-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s}
+.ov-card:hover{transform:translateY(-2px)}
+.ov-card[data-m="0"]:hover{border-color:var(--c0)}
+.ov-card[data-m="1"]:hover{border-color:var(--c1)}
+.ov-card[data-m="2"]:hover{border-color:var(--c2)}
+.ov-card[data-m="3"]:hover{border-color:var(--c3)}
+.ov-icon{font-size:22px;margin-bottom:6px}
+.ov-name{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:.5px}
+.ov-score{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;margin-top:4px}
+
+.tabs{position:relative;z-index:1;display:flex;gap:8px;padding:0 20px;justify-content:center;flex-wrap:wrap;max-width:820px;margin:0 auto 28px}
+.tab-btn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.tab-btn[data-module="0"].active{border-color:var(--c0);color:var(--c0);background:rgba(0,229,255,.07);box-shadow:0 0 14px rgba(0,229,255,.12)}
+.tab-btn[data-module="1"].active{border-color:var(--c1);color:var(--c1);background:rgba(255,60,172,.07);box-shadow:0 0 14px rgba(255,60,172,.12)}
+.tab-btn[data-module="2"].active{border-color:var(--c2);color:var(--c2);background:rgba(157,78,255,.07);box-shadow:0 0 14px rgba(157,78,255,.12)}
+.tab-btn[data-module="3"].active{border-color:var(--c3);color:var(--c3);background:rgba(0,255,148,.07);box-shadow:0 0 14px rgba(0,255,148,.12)}
+.tab-btn:hover:not(.active){border-color:var(--text);color:var(--text)}
+
+.content{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:0 20px 100px}
+.module{display:none;animation:fadeUp .3s ease}
+.module.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.mod-hdr{display:flex;align-items:center;gap:16px;margin-bottom:28px}
+.mod-icon{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;border:1px solid}
+.m0 .mod-icon{background:rgba(0,229,255,.08);border-color:rgba(0,229,255,.25)}
+.m1 .mod-icon{background:rgba(255,60,172,.08);border-color:rgba(255,60,172,.25)}
+.m2 .mod-icon{background:rgba(157,78,255,.08);border-color:rgba(157,78,255,.25)}
+.m3 .mod-icon{background:rgba(0,255,148,.08);border-color:rgba(0,255,148,.25)}
+.mod-title{font-size:1.5rem;font-weight:800}
+.mod-sub{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:3px}
+
+.sec-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.concepts{display:grid;gap:10px;margin-bottom:36px}
+.cc{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.m0 .cc:hover{border-color:rgba(0,229,255,.35)}
+.m1 .cc:hover{border-color:rgba(255,60,172,.35)}
+.m2 .cc:hover{border-color:rgba(157,78,255,.35)}
+.m3 .cc:hover{border-color:rgba(0,255,148,.35)}
+.cc-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;gap:12px}
+.cc-q{font-size:13.5px;font-weight:700;line-height:1.4}
+.cc-arrow{font-size:16px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.cc.open .cc-arrow{transform:rotate(90deg)}
+.cc-body{display:none;padding:0 18px 16px;font-size:13px;line-height:1.75;color:#b8b8d4;border-top:1px solid var(--border)}
+.cc-body p{margin-top:14px}
+.cc.open .cc-body{display:block}
+.pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.pill{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.5px;padding:3px 10px;border-radius:20px;border:1px solid}
+.m0 .pill{color:var(--c0);border-color:rgba(0,229,255,.3);background:rgba(0,229,255,.05)}
+.m1 .pill{color:var(--c1);border-color:rgba(255,60,172,.3);background:rgba(255,60,172,.05)}
+.m2 .pill{color:var(--c2);border-color:rgba(157,78,255,.3);background:rgba(157,78,255,.05)}
+.m3 .pill{color:var(--c3);border-color:rgba(0,255,148,.3);background:rgba(0,255,148,.05)}
+.hbox{border-radius:10px;padding:12px 16px;margin-top:12px;font-size:12.5px;line-height:1.7}
+.m0 .hbox{background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.15)}
+.m1 .hbox{background:rgba(255,60,172,.05);border:1px solid rgba(255,60,172,.15)}
+.m2 .hbox{background:rgba(157,78,255,.05);border:1px solid rgba(157,78,255,.15)}
+.m3 .hbox{background:rgba(0,255,148,.05);border:1px solid rgba(0,255,148,.15)}
+
+.quiz-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px}
+.q-num{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px;letter-spacing:1px}
+.q-text{font-size:14px;font-weight:700;line-height:1.55;margin-bottom:16px}
+.options{display:grid;gap:8px}
+.opt{width:100%;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;color:var(--text);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:11px}
+.opt:hover:not(:disabled){background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.2)}
+.opt-ltr{font-family:'Space Mono',monospace;font-size:10px;width:22px;height:22px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.opt.correct{border-color:var(--c3);background:rgba(0,255,148,.07)}
+.opt.correct .opt-ltr{background:var(--c3);color:#000}
+.opt.wrong{border-color:var(--c1);background:rgba(255,60,172,.07);opacity:.65}
+.opt.wrong .opt-ltr{background:var(--c1);color:#fff}
+.opt:disabled{cursor:default}
+.feedback{display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:12.5px;line-height:1.6}
+.feedback.show{display:block}
+.feedback.ok{background:rgba(0,255,148,.07);color:var(--c3);border:1px solid rgba(0,255,148,.2)}
+.feedback.fail{background:rgba(255,60,172,.07);color:var(--c1);border:1px solid rgba(255,60,172,.2)}
+
+.toast{position:fixed;bottom:28px;right:22px;z-index:300;font-family:'Space Mono',monospace;font-size:12px;padding:11px 18px;border-radius:10px;background:var(--card2);border:1px solid var(--c3);color:var(--c3);transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.22,1,.36,1);pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+.completion{display:none;background:linear-gradient(135deg,rgba(0,229,255,.07),rgba(157,78,255,.07));border:1px solid var(--c2);border-radius:16px;padding:32px;text-align:center;margin-top:24px}
+.completion.show{display:block;animation:fadeUp .4s ease}
+.completion h2{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,var(--c0),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.completion p{color:var(--muted);margin-top:8px;font-family:'Space Mono',monospace;font-size:12px}
+
+@media(max-width:600px){
+  .overview{grid-template-columns:repeat(2,1fr)}
+  .xp-track{width:80px}
+  header{padding:10px 14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">TIC // NP2</div>
+  <div class="hdr-right">
+    <div class="xp-wrap">
+      <span class="xp-lbl">XP</span>
+      <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+    </div>
+    <div class="score-badge" id="scoreBadge">0 / 160</div>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-tag">AULAS 06 · 07 · 08 · 09</div>
+  <h1>Modo Estudo NP2</h1>
+  <p>// tecnologia da informação e comunicação</p>
+</div>
+
+<div class="overview">
+  <div class="ov-card" data-m="0" onclick="switchTab(0)">
+    <div class="ov-icon">🌐</div>
+    <div class="ov-name">IOT</div>
+    <div class="ov-score" id="ov0" style="color:var(--c0)">0/40</div>
+  </div>
+  <div class="ov-card" data-m="1" onclick="switchTab(1)">
+    <div class="ov-icon">🤖</div>
+    <div class="ov-name">IA / ML / DL</div>
+    <div class="ov-score" id="ov1" style="color:var(--c1)">0/40</div>
+  </div>
+  <div class="ov-card" data-m="2" onclick="switchTab(2)">
+    <div class="ov-icon">🔒</div>
+    <div class="ov-name">RANSOMWARE</div>
+    <div class="ov-score" id="ov2" style="color:var(--c2)">0/40</div>
+  </div>
+  <div class="ov-card" data-m="3" onclick="switchTab(3)">
+    <div class="ov-icon">🔑</div>
+    <div class="ov-name">CRIPTOGRAFIA</div>
+    <div class="ov-score" id="ov3" style="color:var(--c3)">0/40</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-module="0" onclick="switchTab(0)">🌐 Internet das Coisas</button>
+  <button class="tab-btn" data-module="1" onclick="switchTab(1)">🤖 IA / ML / DL</button>
+  <button class="tab-btn" data-module="2" onclick="switchTab(2)">🔒 Ransomware</button>
+  <button class="tab-btn" data-module="3" onclick="switchTab(3)">🔑 Criptografia</button>
+</div>
+
+<div class="content">
+
+<!-- ── MÓDULO 0: IoT ── -->
+<div class="module m0 active" id="mod0">
+  <div class="mod-hdr">
+    <div class="mod-icon">🌐</div>
+    <div>
+      <div class="mod-title">Internet das Coisas</div>
+      <div class="mod-sub">// aula 06 — internet insegura das coisas</div>
+    </div>
+  </div>
+
+  <div class="sec-label">CONCEITOS ESSENCIAIS</div>
+  <div class="concepts">
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">O que é IoT (Internet das Coisas)?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Rede de objetos físicos com tecnologia embutida para se <strong>comunicar, sentir ou interagir</strong> com o ambiente externo. Definição da <strong>Gartner</strong>: qualquer objeto físico pode fazer parte da IoT.</p>
+        <p>Permite coleta, transmissão, guarda e compartilhamento de dados entre objetos e empresas.</p>
+        <div class="pill-row"><span class="pill">SENSORES</span><span class="pill">CONECTIVIDADE</span><span class="pill">DADOS</span><span class="pill">AUTOMAÇÃO</span></div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Quais são as variações da IoT?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p><strong>IIoT</strong> (Industrial IoT) — fábricas, energia, petróleo, mineração. Foco em automação e manutenção preditiva.</p>
+        <p><strong>IoMT</strong> (Internet of Medical Things) — saúde, monitoramento de pacientes, wearables, equipamentos hospitalares.</p>
+        <div class="hbox">💡 Mesma lógica de dispositivos conectados aplicada em contextos diferentes.</div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">O que é Indústria 4.0 e sua relação com IoT?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Resultado de um processo de transformação digital. Envolve: Cloud, Virtualização, SaaS, Big Data, ChatBot, Automação, Impressão 3D, Realidade Aumentada, Machine Learning, IA.</p>
+        <p>IoT é um dos pilares centrais da 4ª Revolução Industrial (a partir de ~2005).</p>
+        <div class="pill-row"><span class="pill">1ª REV: 1784</span><span class="pill">2ª REV: 1870</span><span class="pill">3ª REV: 1960</span><span class="pill">4ª REV: 2005</span></div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Quais os riscos de segurança da IoT?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Fabricantes sem experiência em segurança entram no mercado rapidamente. Mesmo indústrias experientes ignoram controles eficientes para atender a demanda.</p>
+        <p><strong>Caso real de ataque:</strong> Invasor liga se passando por cliente → obtém e-mail → envia link falso → funcionária clica → invasor mapeia a rede → encontra câmera com login padrão do fabricante → obtém senha do Wi-Fi → acessa servidores e senha de administrador do domínio.</p>
+        <div class="hbox">⚠️ Tudo isso sem entrar fisicamente na empresa — apenas ficando no alcance do sinal Wi-Fi.</div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Quais habilidades o mercado IoT mais busca?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Crescimento de demanda: Machine Learning <strong>+220%</strong>, AutoCad +108%, Node.js +99%, Segurança de Infraestrutura +83%, Big Data +71%, GPS +44%, Engenharia Elétrica +41%.</p>
+        <p>Disciplinas mais exigidas no suporte: Gerenciamento de Ativos, Segurança da Informação, Redes, Monitoração, Automação, Eletrônica.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sec-label">QUIZ — 4 QUESTÕES · 10 XP CADA</div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 01</div>
+    <div class="q-text">Segundo a Gartner, o que define a Internet das Coisas (IoT)?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'IoT não se limita a dispositivos domésticos.')"><span class="opt-ltr">A</span>Rede exclusiva para dispositivos domésticos conectados à internet</button>
+      <button class="opt" onclick="answer(this,true,'Exato! Qualquer objeto físico com tecnologia embutida para comunicar, sentir ou interagir com o ambiente.')"><span class="opt-ltr">B</span>Rede de objetos físicos com tecnologia embutida para se comunicar, sentir ou interagir com o ambiente</button>
+      <button class="opt" onclick="answer(this,false,'Essa é a definição de computação em nuvem, não de IoT.')"><span class="opt-ltr">C</span>Sistema de armazenamento de dados na nuvem para empresas industriais</button>
+      <button class="opt" onclick="answer(this,false,'Esse é o conceito de Big Data, não de IoT.')"><span class="opt-ltr">D</span>Plataforma de análise de grandes volumes de dados corporativos</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 02</div>
+    <div class="q-text">IIoT se refere a qual segmento específico da IoT?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'Esse é o IoMT — Internet of Medical Things.')"><span class="opt-ltr">A</span>Saúde e monitoramento de pacientes</button>
+      <button class="opt" onclick="answer(this,false,'Esse seria o setor de varejo/consumo.')"><span class="opt-ltr">B</span>Varejo e rastreamento de produtos</button>
+      <button class="opt" onclick="answer(this,true,'Correto! IIoT = Industrial IoT, focado em indústrias, fábricas, energia, automação e manutenção preditiva.')"><span class="opt-ltr">C</span>Indústria, fábricas, energia, petróleo e automação</button>
+      <button class="opt" onclick="answer(this,false,'Esse seria o setor de transporte/mobilidade.')"><span class="opt-ltr">D</span>Transporte e logística urbana</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 03</div>
+    <div class="q-text">No caso real de invasão via IoT da aula, qual foi o ponto de entrada inicial do atacante?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'O invasor não atacou o servidor diretamente no início.')"><span class="opt-ltr">A</span>Acesso direto ao servidor da empresa pela internet</button>
+      <button class="opt" onclick="answer(this,false,'Nenhum pendrive foi usado no caso apresentado.')"><span class="opt-ltr">B</span>Pendrive infectado deixado no estacionamento</button>
+      <button class="opt" onclick="answer(this,true,'Correto! Uma câmera de segurança com login padrão do fabricante foi a porta de entrada — que levou ao acesso completo da rede.')"><span class="opt-ltr">C</span>Câmera de segurança com login padrão do fabricante</button>
+      <button class="opt" onclick="answer(this,false,'Não houve ataque ao roteador principal diretamente.')"><span class="opt-ltr">D</span>Ataque ao roteador principal via força bruta</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 04</div>
+    <div class="q-text">Qual habilidade teve o MAIOR crescimento de demanda no mercado de IoT, segundo os dados da aula?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'Node.js cresceu 99%, não é o maior.')"><span class="opt-ltr">A</span>Node.js (+99%)</button>
+      <button class="opt" onclick="answer(this,true,'Correto! Machine Learning liderou com +220% de crescimento de demanda.')"><span class="opt-ltr">B</span>Machine Learning (+220%)</button>
+      <button class="opt" onclick="answer(this,false,'Big Data cresceu 71%.')"><span class="opt-ltr">C</span>Big Data (+71%)</button>
+      <button class="opt" onclick="answer(this,false,'AutoCad cresceu 108% — segundo maior, não o primeiro.')"><span class="opt-ltr">D</span>AutoCad (+108%)</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+</div>
+
+<!-- ── MÓDULO 1: IA ── -->
+<div class="module m1" id="mod1">
+  <div class="mod-hdr">
+    <div class="mod-icon">🤖</div>
+    <div>
+      <div class="mod-title">Inteligência Artificial</div>
+      <div class="mod-sub">// aula 07 — IA, machine learning e deep learning</div>
+    </div>
+  </div>
+
+  <div class="sec-label">CONCEITOS ESSENCIAIS</div>
+  <div class="concepts">
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Qual a relação entre IA, Machine Learning e Deep Learning?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Pense em <strong>círculos concêntricos</strong>: IA é o maior (conceito geral), ML está dentro da IA, DL está dentro do ML.</p>
+        <p>Deep Learning é o que está liderando a explosão da IA hoje — usado no AlphaGo, carros autônomos, reconhecimento facial etc.</p>
+        <div class="hbox">🔵 IA &nbsp;⊃&nbsp; 🟡 Machine Learning &nbsp;⊃&nbsp; 🔴 Deep Learning</div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">IA Estreita (ANI) vs IA Geral (AGI)</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p><strong>ANI</strong> (Artificial Narrow Intelligence) — especializada em uma tarefa. Já existe: assistentes de smartphone, AlphaGo, carros autônomos, IA generativa (ChatGPT, DALL-E).</p>
+        <p><strong>AGI</strong> (Artificial General Intelligence) — reproduziria toda a complexidade do cérebro humano. Ainda é o "Santo Graal" — não existe.</p>
+        <div class="pill-row"><span class="pill">ANI = JÁ EXISTE</span><span class="pill">AGI = FUTURO</span></div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Como funciona o Machine Learning?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>O algoritmo aprende com <strong>dados estruturados e rotulados</strong>. Ex: você marca fotos de gatos, cães, paisagens e comida. O algoritmo aprende as características de cada categoria e continua a trabalhar com base no que aprendeu.</p>
+        <div class="hbox">📌 ML = dados estruturados + treinamento supervisionado (humano rotula os dados)</div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Como o Deep Learning se diferencia do ML?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>DL <strong>não precisa de dados rotulados</strong> obrigatoriamente. Usa redes neurais profundas em múltiplas camadas que definem hierarquicamente as características — similar ao funcionamento do cérebro humano.</p>
+        <p>Aplicações: visão computacional, reconhecimento de voz, NLP, detecção de câncer de pele, carros autônomos.</p>
+        <div class="hbox">📌 Deep Learning = redes neurais profundas + aprendizado sem rotulação manual obrigatória</div>
+        <div class="pill-row"><span class="pill">VISÃO COMPUTACIONAL</span><span class="pill">VOZ</span><span class="pill">NLP</span><span class="pill">ROBÓTICA</span></div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Caso do carro autônomo da Uber (2018)</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Data: <strong>18 de março de 2018</strong>, em Tempe, Arizona. Um Volvo XC90 autônomo atropelou Elaine Herzberg (49 anos) — primeira vítima fatal de carros autônomos.</p>
+        <p>O relatório do Conselho Nacional de Segurança dos EUA identificou que a IA <strong>não reconheceu a pedestre como uma pessoa</strong>. A motorista de segurança assistia The Voice no celular e foi acusada de homicídio.</p>
+        <div class="hbox">⚠️ Caso emblemático dos limites e responsabilidades da IA no mundo real.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sec-label">QUIZ — 4 QUESTÕES · 10 XP CADA</div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 01</div>
+    <div class="q-text">Qual é a relação correta entre IA, Machine Learning e Deep Learning?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'São conceitos com relação hierárquica, não independentes.')"><span class="opt-ltr">A</span>São três tecnologias independentes sem relação entre si</button>
+      <button class="opt" onclick="answer(this,false,'Essa ordem está invertida.')"><span class="opt-ltr">B</span>Deep Learning é o maior, contendo ML e IA dentro</button>
+      <button class="opt" onclick="answer(this,true,'Correto! IA é o conceito maior. ML é subconjunto de IA. DL é subconjunto de ML — como círculos concêntricos.')"><span class="opt-ltr">C</span>IA contém ML que contém DL — como círculos concêntricos</button>
+      <button class="opt" onclick="answer(this,false,'Machine Learning não é o conceito mais abrangente dos três.')"><span class="opt-ltr">D</span>Machine Learning é o conceito mais abrangente dos três</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 02</div>
+    <div class="q-text">O que diferencia a ANI (IA Estreita) da AGI (IA Geral)?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'Não é sobre custo, é sobre capacidade cognitiva.')"><span class="opt-ltr">A</span>ANI é mais cara e complexa que a AGI</button>
+      <button class="opt" onclick="answer(this,true,'Correto! ANI é especializada em uma área e já existe. AGI reproduziria toda a complexidade do cérebro humano — ainda é o "Santo Graal".')"><span class="opt-ltr">B</span>ANI é especializada em uma área; AGI reproduziria toda a complexidade do cérebro humano</button>
+      <button class="opt" onclick="answer(this,false,'Ambas usam algoritmos; o que muda é o escopo cognitivo.')"><span class="opt-ltr">C</span>ANI usa algoritmos; AGI usa exclusivamente hardware biológico</button>
+      <button class="opt" onclick="answer(this,false,'AGI ainda não existe comercialmente.')"><span class="opt-ltr">D</span>AGI já é amplamente usada comercialmente; ANI ainda está em pesquisa</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 03</div>
+    <div class="q-text">Qual é a principal diferença entre Machine Learning e Deep Learning no processo de aprendizado?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'Velocidade não é a principal distinção entre os dois.')"><span class="opt-ltr">A</span>ML é mais rápido; DL processa dados mais lentamente</button>
+      <button class="opt" onclick="answer(this,false,'Ambos podem usar grandes volumes de dados.')"><span class="opt-ltr">B</span>ML usa grandes volumes; DL usa pequenos conjuntos de dados</button>
+      <button class="opt" onclick="answer(this,true,'Correto! ML precisa de dados rotulados. DL usa redes neurais profundas e não precisa de rotulação manual obrigatória — define características hierarquicamente.')"><span class="opt-ltr">C</span>ML precisa de dados rotulados; DL aprende por redes neurais sem rotulação obrigatória</button>
+      <button class="opt" onclick="answer(this,false,'Não é uma questão de linguagem de programação.')"><span class="opt-ltr">D</span>ML usa Python; DL usa exclusivamente linguagens de baixo nível</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 04</div>
+    <div class="q-text">O que a IA do carro autônomo da Uber falhou em fazer no acidente de 2018?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'O problema foi de reconhecimento, não de falha mecânica nos freios.')"><span class="opt-ltr">A</span>Acionar o sistema de freios a tempo</button>
+      <button class="opt" onclick="answer(this,true,'Correto! O relatório identificou que a IA não reconheceu Elaine Herzberg como uma pessoa.')"><span class="opt-ltr">B</span>Identificar a pedestre como uma pessoa</button>
+      <button class="opt" onclick="answer(this,false,'A IA estava ativa, mas falhou no reconhecimento de objeto/pessoa.')"><span class="opt-ltr">C</span>Manter o sistema de piloto automático ativo</button>
+      <button class="opt" onclick="answer(this,false,'Não houve problema de GPS no caso.')"><span class="opt-ltr">D</span>Receber sinal GPS corretamente</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+</div>
+
+<!-- ── MÓDULO 2: Ransomware ── -->
+<div class="module m2" id="mod2">
+  <div class="mod-hdr">
+    <div class="mod-icon">🔒</div>
+    <div>
+      <div class="mod-title">Ransomware</div>
+      <div class="mod-sub">// aula 08 — segurança cibernética</div>
+    </div>
+  </div>
+
+  <div class="sec-label">CONCEITOS ESSENCIAIS</div>
+  <div class="concepts">
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">O que é Ransomware?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p><strong>Ransom</strong> (resgate) + <strong>ware</strong> (malware) = vírus de resgate / sequestro digital.</p>
+        <p>Ataque em que o invasor <strong>criptografa os arquivos da vítima</strong>, tornando-os inacessíveis. Para recuperar o acesso, a vítima paga um resgate para obter a chave de descriptografia.</p>
+        <p>Pode ser executado <strong>manualmente</strong> (invasor explora vulnerabilidades e criptografa remotamente) ou de forma <strong>automatizada</strong> (se dissemina pela rede).</p>
+        <div class="hbox">⚠️ A criptografia em si não é código malicioso — por isso pode não gerar alertas de antivírus.</div>
+        <div class="pill-row"><span class="pill">CRIPTOGRAFIA</span><span class="pill">RESGATE</span><span class="pill">RANSOMCLOUD</span></div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">WannaCry — 1º grande ataque mundial</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Data: <strong>12/05/2017</strong> (sexta-feira). Afetou mais de <strong>150 países</strong>. Empresas na Espanha, Portugal e Inglaterra paralisaram. Hospitais do NHS (Reino Unido) foram bloqueados.</p>
+        <p>No Brasil: Vivo, Petrobras, Tribunal de Justiça SP, Ministério Público, INSS.</p>
+        <div class="hbox">📌 Sistema mais afetado: Windows 7 (não Windows XP, como se especulava inicialmente).</div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Petya — 2º grande ataque mundial</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Data: <strong>25/06/2017</strong> (terça-feira). Surgiu na Ucrânia e paralisou bancos, aeroportos, mercados, usinas e órgãos estatais. No Brasil, o Hospital de Câncer de Barretos foi atingido.</p>
+        <p>Diferença crucial: o objetivo <strong>não era sequestrar os dados — era destruí-los</strong>.</p>
+        <div class="hbox">🕵️ Curiosidade: horas antes do ataque do Petya, o principal coronel do setor de inteligência das Forças Armadas da Ucrânia foi morto em atentado.</div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Os 4 mitos sobre Ransomware</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>❌ <strong>"Somos pequenos, não somos alvo"</strong> → Hospital de Câncer de Barretos também não era "alvo", mas foi paralisado.</p>
+        <p>❌ <strong>"Temos firewall e antivírus, estamos seguros"</strong> → Grandes empresas com tecnologia de ponta não conseguiram evitar os ataques.</p>
+        <p>❌ <strong>"Dá para recuperar os dados"</strong> → Iniciativas como "No More Ransom" ajudam em casos pontuais, não em geral.</p>
+        <p>❌ <strong>"Nunca passamos por incidente"</strong> → Pode ser sorte. As estatísticas demonstram o contrário.</p>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Lições aprendidas — como se proteger</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p><strong>Não existem soluções mágicas.</strong> É um conjunto de ações envolvendo tecnologias, processos e pessoas.</p>
+        <p>✅ <strong>Backup · Backup · Backup</strong> — cópias separadas e testadas. Nunca inserir o backup na rede infectada antes de eliminar a ameaça.</p>
+        <p>✅ Controle de e-mails — maioria dos ataques vem por anexos e links.</p>
+        <p>✅ Gestão centralizada de antivírus com acompanhamento constante.</p>
+        <p>✅ Acesso remoto seguro: VPN + autenticação em duas etapas + senhas com critérios.</p>
+        <p>✅ Educação e conscientização periódica dos usuários.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sec-label">QUIZ — 4 QUESTÕES · 10 XP CADA</div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 01</div>
+    <div class="q-text">O que o termo "Ransomware" significa literalmente?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'Não tem a ver com roubo de identidade.')"><span class="opt-ltr">A</span>Software de roubo de identidade</button>
+      <button class="opt" onclick="answer(this,false,'Não é rastreamento — é sequestro de dados.')"><span class="opt-ltr">B</span>Programa de rastreamento remoto</button>
+      <button class="opt" onclick="answer(this,true,'Correto! Ransom = resgate + ware = malware. Também chamado de vírus de resgate ou sequestro digital.')"><span class="opt-ltr">C</span>Malware de resgate (ransom + ware)</button>
+      <button class="opt" onclick="answer(this,false,'Não é relacionado a quebra de senhas.')"><span class="opt-ltr">D</span>Ferramenta de quebra de senhas</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 02</div>
+    <div class="q-text">Qual foi a principal diferença entre o WannaCry e o Petya?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'Ambos foram ataques globais.')"><span class="opt-ltr">A</span>WannaCry afetou apenas o Brasil; Petya foi global</button>
+      <button class="opt" onclick="answer(this,false,'Ambos usaram criptografia.')"><span class="opt-ltr">B</span>WannaCry usou criptografia; Petya não usou nenhum tipo de ataque</button>
+      <button class="opt" onclick="answer(this,true,'Correto! WannaCry sequestrava dados por resgate. O Petya tinha como objetivo destruir os dados, não apenas sequestrar.')"><span class="opt-ltr">C</span>WannaCry sequestrava dados por resgate; Petya tinha objetivo de destruir dados</button>
+      <button class="opt" onclick="answer(this,false,'O Petya surgiu em junho de 2017, depois do WannaCry.')"><span class="opt-ltr">D</span>Petya foi o primeiro ataque; WannaCry veio depois</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 03</div>
+    <div class="q-text">Por que o Ransomware pode não ser detectado pelo antivírus?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'Não é sobre o tamanho dos arquivos.')"><span class="opt-ltr">A</span>Porque os arquivos são muito pequenos para serem escaneados</button>
+      <button class="opt" onclick="answer(this,false,'Não tem a ver com criptografia do próprio executável malicioso.')"><span class="opt-ltr">B</span>Porque o vírus criptografa seu próprio código executável</button>
+      <button class="opt" onclick="answer(this,true,'Correto! A criptografia em si é uma função legítima do sistema — não é código malicioso. Por isso pode não disparar alertas de antivírus.')"><span class="opt-ltr">C</span>Porque a criptografia em si não é código malicioso — é uma função legítima</button>
+      <button class="opt" onclick="answer(this,false,'O motivo não é sobre antivírus gratuitos vs pagos.')"><span class="opt-ltr">D</span>Porque antivírus gratuitos nunca detectam ameaças reais</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 04</div>
+    <div class="q-text">Qual é considerada a medida MAIS eficaz de proteção contra Ransomware, segundo a aula?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'Firewall é importante mas não garante recuperação dos dados.')"><span class="opt-ltr">A</span>Instalar o firewall mais caro do mercado</button>
+      <button class="opt" onclick="answer(this,false,'Pagar o resgate não é recomendado e não garante recuperação.')"><span class="opt-ltr">B</span>Pagar o resgate rapidamente para minimizar o tempo parado</button>
+      <button class="opt" onclick="answer(this,true,'Correto! Backup, Backup, Backup — cópias separadas e testadas ainda é o meio mais eficaz de recuperação de um desastre.')"><span class="opt-ltr">C</span>Manter cópias de backup separadas e testadas regularmente</button>
+      <button class="opt" onclick="answer(this,false,'Desconectar da internet permanentemente tornaria a empresa inoperante.')"><span class="opt-ltr">D</span>Desconectar todos os computadores da internet permanentemente</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+</div>
+
+<!-- ── MÓDULO 3: Criptografia ── -->
+<div class="module m3" id="mod3">
+  <div class="mod-hdr">
+    <div class="mod-icon">🔑</div>
+    <div>
+      <div class="mod-title">Criptografia</div>
+      <div class="mod-sub">// aula 09 — laboratório: veracrypt e keepass</div>
+    </div>
+  </div>
+
+  <div class="sec-label">CONCEITOS ESSENCIAIS</div>
+  <div class="concepts">
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">O que é Criptografia e por que ela importa?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Técnica que <strong>codifica informações</strong> de forma que somente quem tem a senha/chave pode acessá-las.</p>
+        <p><strong>Privacidade:</strong> evita que governos, hackers ou ISPs interceptem suas comunicações.</p>
+        <p><strong>Integridade:</strong> qualquer modificação indevida nos dados é detectada.</p>
+        <p><strong>Segurança de arquivos:</strong> mesmo com acesso físico ao dispositivo, sem a chave os dados são ilegíveis.</p>
+        <div class="hbox">📌 Caso Daniel Dantas (2008): HD apreendido pela PF. O FBI tentou por mais de 1 ano e não conseguiu quebrar a criptografia AES 256 bits + TrueCrypt.</div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">O que é o VeraCrypt?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Plataforma de <strong>criptografia de disco open source</strong> disponível para Windows, Mac e Linux. Substitui o TrueCrypt (descontinuado em 2014 após escândalos da NSA).</p>
+        <p>Usa algoritmos: <strong>AES, Serpent e Twofish</strong>. Permite criar discos virtuais criptografados em HDs, partições e pendrives.</p>
+        <p>Funciona como um HD virtual: você monta (<strong>Mount</strong>) com senha, usa os arquivos, desmonta (<strong>Dismount</strong>) e tudo volta a ficar criptografado.</p>
+        <div class="pill-row"><span class="pill">AES</span><span class="pill">SERPENT</span><span class="pill">TWOFISH</span><span class="pill">OPEN SOURCE</span></div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">O que é o KeePass e para que serve?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>Gerenciador de senhas <strong>open source</strong>. Armazena credenciais em um arquivo-cofre criptografado localmente. O usuário só precisa lembrar de <strong>uma senha mestre</strong>.</p>
+        <p>Gera senhas complexas automaticamente. Suporta duplo fator de autenticação: <strong>Senha Mestre + Chave</strong> (arquivo gerado ou associado).</p>
+        <div class="hbox">As senhas mais usadas no Brasil em 2024: 123456, consulta123, qwerty1... Demonstra falta de cultura de segurança de senhas.</div>
+        <div class="pill-row"><span class="pill">SENHA MESTRE</span><span class="pill">COFRE LOCAL</span><span class="pill">2FA</span><span class="pill">GERADOR DE SENHAS</span></div>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">VeraCrypt — passo a passo resumido</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p><strong>1.</strong> Baixar em veracrypt.fr e instalar.</p>
+        <p><strong>2.</strong> Abrir o VeraCrypt → "Create Volume" → criar o volume criptografado.</p>
+        <p><strong>3.</strong> Para acessar: selecionar uma letra de drive → clicar em "Mount" → digitar a senha.</p>
+        <p><strong>4.</strong> Usar normalmente como um HD ou pendrive.</p>
+        <p><strong>5.</strong> Para fechar: clicar em "Dismount" → tudo volta a ficar protegido pela criptografia automaticamente.</p>
+      </div>
+    </div>
+
+    <div class="cc" onclick="toggleCC(this)">
+      <div class="cc-head"><span class="cc-q">Por que senha de login do computador não é suficiente?</span><span class="cc-arrow">▶</span></div>
+      <div class="cc-body">
+        <p>A senha de login protege o acesso ao sistema operacional, mas <strong>não protege os arquivos no HD</strong>. Com acesso físico ao dispositivo, é possível extrair os dados sem precisar do SO.</p>
+        <p>A criptografia protege os dados no nível do armazenamento — sem a chave, os dados são ilegíveis mesmo com acesso físico.</p>
+        <div class="hbox">💡 Roubo/furto do aparelho: sem criptografia = dados expostos. Com criptografia = dados protegidos.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sec-label">QUIZ — 4 QUESTÕES · 10 XP CADA</div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 01</div>
+    <div class="q-text">O VeraCrypt substituiu qual software após este ser descontinuado em 2014?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'BitLocker é da Microsoft e não foi o predecessor do VeraCrypt.')"><span class="opt-ltr">A</span>BitLocker</button>
+      <button class="opt" onclick="answer(this,true,'Correto! O TrueCrypt foi descontinuado em 2014 após escândalos da NSA. O VeraCrypt surgiu como substituto open source.')"><span class="opt-ltr">B</span>TrueCrypt</button>
+      <button class="opt" onclick="answer(this,false,'FileVault é da Apple.')"><span class="opt-ltr">C</span>FileVault</button>
+      <button class="opt" onclick="answer(this,false,'DiskCrypt não é o predecessor mencionado na aula.')"><span class="opt-ltr">D</span>DiskCrypt</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 02</div>
+    <div class="q-text">Quais algoritmos de criptografia o VeraCrypt utiliza?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'MD5 é algoritmo de hash, não de criptografia de disco.')"><span class="opt-ltr">A</span>MD5, SHA-1 e RSA</button>
+      <button class="opt" onclick="answer(this,true,'Correto! O VeraCrypt usa AES, Serpent e Twofish para garantir a proteção dos dados.')"><span class="opt-ltr">B</span>AES, Serpent e Twofish</button>
+      <button class="opt" onclick="answer(this,false,'DES é desatualizado e vulnerável.')"><span class="opt-ltr">C</span>DES, Blowfish e RC4</button>
+      <button class="opt" onclick="answer(this,false,'SSL e TLS são protocolos de comunicação, não algoritmos de criptografia de disco.')"><span class="opt-ltr">D</span>SSL, TLS e HTTPS</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 03</div>
+    <div class="q-text">O caso Daniel Dantas (2008) ficou famoso no contexto de criptografia por quê?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'Não foi um ataque de ransomware — foram arquivos criptografados intencionalmente.')"><span class="opt-ltr">A</span>Foi o primeiro caso de ataque de ransomware no Brasil</button>
+      <button class="opt" onclick="answer(this,false,'O FBI não conseguiu quebrar a criptografia, e isso foi o destaque do caso.')"><span class="opt-ltr">B</span>O FBI conseguiu quebrar a criptografia em tempo recorde</button>
+      <button class="opt" onclick="answer(this,true,'Correto! O HD apreendido usava AES 256 bits + TrueCrypt. O FBI tentou por mais de 1 ano e não conseguiu descriptografar os arquivos.')"><span class="opt-ltr">C</span>O FBI tentou por mais de 1 ano e não conseguiu quebrar a criptografia AES 256 bits</button>
+      <button class="opt" onclick="answer(this,false,'O caso envolve criptografia forte, não senhas fracas.')"><span class="opt-ltr">D</span>Demonstrou a vulnerabilidade de senhas fracas em sistemas governamentais</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q-num">QUESTÃO 04</div>
+    <div class="q-text">No KeePass, o que garante maior segurança para abrir o "cofre" de senhas?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this,false,'Biometria não é mencionada como padrão do KeePass na aula.')"><span class="opt-ltr">A</span>Somente reconhecimento biométrico</button>
+      <button class="opt" onclick="answer(this,false,'Apenas a senha mestre oferece menos segurança que a combinação com chave.')"><span class="opt-ltr">B</span>Apenas a senha mestre, sem necessidade de mais nada</button>
+      <button class="opt" onclick="answer(this,true,'Correto! Senha Mestre + Chave (arquivo gerado ou associado) cria duplo fator de autenticação para o cofre.')"><span class="opt-ltr">C</span>Senha Mestre + Chave (arquivo), criando duplo fator de autenticação</button>
+      <button class="opt" onclick="answer(this,false,'O KeePass não usa PIN por SMS.')"><span class="opt-ltr">D</span>PIN numérico de 6 dígitos enviado por SMS</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+</div>
+
+<div class="completion" id="completionBanner">
+  <h2>🎯 NP2 Dominada!</h2>
+  <p>// 160/160 XP — boa sorte na prova, você tá pronto</p>
+</div>
+
+</div><!-- /content -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const XP_PER_Q = 10;
+const MAX_XP = 160;
+let totalXP = 0;
+let moduleXP = [0,0,0,0];
+
+function switchTab(n) {
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mod'+n).classList.add('active');
+  document.querySelector(`.tab-btn[data-module="${n}"]`).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleCC(el) {
+  const wasOpen = el.classList.contains('open');
+  el.closest('.concepts').querySelectorAll('.cc').forEach(c => c.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+
+function answer(btn, correct, explanation) {
+  const card = btn.closest('.quiz-card');
+  if (card.dataset.answered) return;
+  card.dataset.answered = '1';
+  card.querySelectorAll('.opt').forEach(o => o.disabled = true);
+  const fb = card.querySelector('.feedback');
+  if (correct) {
+    btn.classList.add('correct');
+    fb.className = 'feedback show ok';
+    fb.textContent = '✓ ' + explanation;
+    const modIdx = parseInt(btn.closest('.module').id.replace('mod',''));
+    moduleXP[modIdx] += XP_PER_Q;
+    totalXP += XP_PER_Q;
+    updateXP();
+    showToast('+' + XP_PER_Q + ' XP');
+  } else {
+    btn.classList.add('wrong');
+    fb.className = 'feedback show fail';
+    fb.textContent = '✗ ' + explanation;
+    card.querySelectorAll('.opt').forEach(o => {
+      if (o.getAttribute('onclick').includes('true')) o.classList.add('correct');
+    });
+  }
+}
+
+function updateXP() {
+  document.getElementById('xpFill').style.width = (totalXP/MAX_XP*100)+'%';
+  document.getElementById('scoreBadge').textContent = totalXP+' / '+MAX_XP;
+  [0,1,2,3].forEach(i => document.getElementById('ov'+i).textContent = moduleXP[i]+'/40');
+  if (totalXP === MAX_XP) {
+    setTimeout(() => document.getElementById('completionBanner').classList.add('show'), 600);
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>
